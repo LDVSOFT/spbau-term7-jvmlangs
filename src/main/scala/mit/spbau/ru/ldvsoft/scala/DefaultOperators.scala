@@ -4,7 +4,7 @@ object DefaultOperators {
   val ADDITION_PRIORITY = 10
   val MULTIPLICATION_PRIORITY = 20
 
-  object AdditionOperator extends Operator {
+  object Addition extends InfixOperator {
     override val name = "+"
     override val priority: Int = ADDITION_PRIORITY
     override val isLeftAssociative = true
@@ -12,7 +12,7 @@ object DefaultOperators {
     override def process(context: CalculationContext, left: Double, right: Double): Double = left + right
   }
 
-  object SubtractionOperator extends Operator {
+  object Subtraction extends InfixOperator {
     override val name = "-"
     override val priority: Int = ADDITION_PRIORITY
     override val isLeftAssociative = true
@@ -20,7 +20,7 @@ object DefaultOperators {
     override def process(context: CalculationContext, left: Double, right: Double): Double = left - right
   }
 
-  object MultiplicationOperator extends Operator {
+  object Multiplication extends InfixOperator {
     override val name = "*"
     override val priority: Int = MULTIPLICATION_PRIORITY
     override val isLeftAssociative = true
@@ -28,7 +28,7 @@ object DefaultOperators {
     override def process(context: CalculationContext, left: Double, right: Double): Double = left * right
   }
 
-  object DivisionOperator extends Operator {
+  object Division extends InfixOperator {
     override val name = "/"
     override val priority: Int = MULTIPLICATION_PRIORITY
     override val isLeftAssociative = true
@@ -36,10 +36,10 @@ object DefaultOperators {
     override def process(context: CalculationContext, left: Double, right: Double): Double = left / right
   }
 
-  def addDefaultOperators(builder: Calculator.Builder): Boolean = {
-    builder.addOperator(AdditionOperator) &&
-      builder.addOperator(SubtractionOperator) &&
-      builder.addOperator(MultiplicationOperator) &&
-      builder.addOperator(DivisionOperator)
+  def addDefaultOperators(builder: CalculationContext.Builder): Boolean = {
+    builder.addOperator(Addition) &&
+      builder.addOperator(Subtraction) &&
+      builder.addOperator(Multiplication) &&
+      builder.addOperator(Division)
   }
 }

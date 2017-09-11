@@ -1,6 +1,6 @@
 package mit.spbau.ru.ldvsoft.scala
 
-trait Operator {
+trait InfixOperator {
   val name: String
   val priority: Int
   val isLeftAssociative: Boolean

@@ -2,9 +2,9 @@ package mit.spbau.ru.ldvsoft.scala
 
 object Main {
   def main(args: Array[String]): Unit = {
-    val builder = new Calculator.Builder()
+    val builder = new CalculationContext.Builder()
     DefaultOperators.addDefaultOperators(builder)
-    val calculator = builder.build()
+    val calculator = new Calculator(builder.build())
 
     while (true) {
       val input  = scala.io.StdIn.readLine("Enter expression: ")
@@ -12,7 +12,7 @@ object Main {
         return
       calculator(input) match {
         case Right(value) => println(s"= $value")
-        case Left(error) => println(s"Error ${error.getClass.getName}: ${error.reason}")
+        case Left(error) => println(s"${error.getClass.getSimpleName}: ${error.reason}")
       }
     }
   }

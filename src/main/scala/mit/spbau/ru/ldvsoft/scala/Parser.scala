@@ -8,49 +8,43 @@ case class ParserError(reason: String) extends CalculationError
 class Parser(val calculationContext: CalculationContext) extends Parsers {
   override type Elem = Token
 
-  private def identifier: Parser[String] = {
-    accept("identifier", { case IDENTIFIER(id) => id })
-  }
-
   private def literal: Parser[Literal] = {
-    accept("literal number", { case LITERAL(value) => Literal(value) })
+    accept("literal number", { case LiteralToken(value) => Literal(value) })
   }
 
-  private def operator: Parser[Operator] = {
-    accept(s"operator, one of ${calculationContext.operators.keys}", {
-      case OPERATOR(name) if calculationContext.operators contains name =>
-        calculationContext.operators.get(name).orNull
+  private def infixOperator: Parser[InfixOperator] = {
+    accept(s"infix operator, one of ${calculationContext.infixOperators.keys}", {
+      case InfixOperatorToken(name) if calculationContext.infixOperators contains name =>
+        calculationContext.infixOperators.get(name).orNull
     })
   }
 
-  private def openingBracket: Parser[OPENING_BRACKET.type] = {
-    accept("opening bracket", { case it @ OPENING_BRACKET => it })
+  private def openingBracket: Parser[OpeningBracketToken.type] = {
+    accept("opening bracket", { case it @ OpeningBracketToken => it })
   }
 
-  private def closingBracket: Parser[CLOSING_BRACKET.type] = {
-    accept("closing bracket", { case it @ CLOSING_BRACKET => it })
+  private def closingBracket: Parser[ClosingBracketToken.type] = {
+    accept("closing bracket", { case it @ ClosingBracketToken => it })
   }
 
-  private def primitive: Parser[AST] = {
-    (openingBracket ~ expression ~ closingBracket) ^^ { case _ ~ e ~ _ => e } | literal
-  }
+  private def primitive: Parser[AST] = (openingBracket ~> expression <~ closingBracket) | literal
 
   private def expression: Parser[AST] = {
-    (primitive ~ rep1(operator ~ primitive)) ^^ { case first ~ listOfOps =>
-      val list: Seq[Either[AST, Any with Operator]] = Left(first) ::
+    (primitive ~ rep(infixOperator ~ primitive)) ^^ { case first ~ listOfOps =>
+      val list: Seq[Either[AST, InfixOperator]] = Left(first) ::
         listOfOps.flatMap { case b ~ a => Right(b) :: Left(a) :: Nil }
       buildAstFromOperators(list)
-    } | primitive
+    }
   }
 
-  private def buildAstFromOperators(input: Seq[Either[AST, Any with Operator]]): AST = {
+  private def buildAstFromOperators(input: Seq[Either[AST, InfixOperator]]): AST = {
     var astStack: List[AST] = List()
-    var operatorStack: List[Operator] = List()
+    var operatorStack: List[InfixOperator] = List()
 
     def popOperatorStack(): Unit = {
       val op = operatorStack.head
       if (astStack.size < 2)
-        throw new IllegalArgumentException(s"Not enough operands for operator $op")
+        throw new IllegalArgumentException(s"Not enough operands for infixOperator $op")
       val right :: left :: remaining = astStack
       operatorStack = operatorStack.tail
       astStack = OperatorApplication(op, left, right) :: remaining
