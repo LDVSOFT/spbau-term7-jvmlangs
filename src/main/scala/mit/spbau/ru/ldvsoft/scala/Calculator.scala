@@ -7,7 +7,7 @@ class Calculator(val calculationContext: CalculationContext) {
     for {
       lexemes <- lexer(input)
       parsed <- parser(lexemes)
-      result = parsed.calculate(calculationContext)
+      result <- parsed.calculate(calculationContext)
     } yield result
   }
 }
