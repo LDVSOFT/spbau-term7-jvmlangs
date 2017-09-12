@@ -49,4 +49,11 @@ class ParserTest extends FunSuite {
       tryParse(".2+.3*.4/(.5-.6)-.7")
     )
   }
+
+  test("Parser failes on wrong inputs") {
+    val parser = getParser
+    assert(parser(List(IdentifierToken("x"))).isLeft)
+    val value = parser(List(1.0, InfixOperatorToken("+"), IdentifierToken("x")))
+    assert(value.isLeft)
+  }
 }

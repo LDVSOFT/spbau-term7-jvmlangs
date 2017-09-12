@@ -37,6 +37,8 @@ class Parser(val calculationContext: CalculationContext) extends Parsers {
     }
   }
 
+  private def fullExpression: Parser[AST] = phrase(expression)
+
   private def buildAstFromOperators(input: Seq[Either[AST, InfixOperator]]): AST = {
     var astStack: List[AST] = List()
     var operatorStack: List[InfixOperator] = List()
@@ -77,7 +79,7 @@ class Parser(val calculationContext: CalculationContext) extends Parsers {
 
   def apply(tokens: Seq[Token]): Either[ParserError, AST] = {
     val reader = new TokenReader(tokens)
-    expression(reader) match {
+    fullExpression(reader) match {
       case NoSuccess(msg, _) => Left(ParserError(msg))
       case Success(ast, _) => Right(ast)
     }
