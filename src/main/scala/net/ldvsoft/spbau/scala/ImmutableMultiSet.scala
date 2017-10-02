@@ -1,16 +1,12 @@
 package net.ldvsoft.spbau.scala
 
-import java.util
-
-import scala.collection.immutable.Set
-
 trait ImmutableMultiSet[+T] {
   def size: Int
   def isEmpty: Boolean
 
   def apply(e: Any): Boolean
   def count(e: Any): Int
-  def containsAll(es: Seq[Any])
+  def containsAll(es: Seq[Any]): Boolean
 
   def find(predicate: T => Boolean): Option[T]
 
@@ -22,25 +18,21 @@ trait ImmutableMultiSet[+T] {
 
   def flatMap[R](f: T => Seq[R]): ImmutableMultiSet[R] = ImmutableMultiSet(seq.flatMap(f):_*)
 
-  def +(b: ImmutableMultiSet[T]): ImmutableMultiSet[T] = {
-    var keys: 
+  def +[U >: T](b: ImmutableMultiSet[U]): ImmutableMultiSet[U] = {
+    val t = MutableMultiSet[U](seq:_*)
+    t.addAll(b.seq)
+    t
+  }
+
+  def -[U >: T](b: ImmutableMultiSet[U]): ImmutableMultiSet[U] = {
+    val t = MutableMultiSet[U](seq:_*)
+    t.removeAll(b.seq)
+    t
   }
 }
 
 object ImmutableMultiSet {
-  def apply[T](es: T*): ImmutableMultiSet[T] = new MultiSetImpl[T](es)
+  def apply[T](es: T*): ImmutableMultiSet[T] = MultiSetImpl[T](es)
 
   def unapplySeq[T](arg: ImmutableMultiSet[T]): Some[Seq[T]] = Some(arg.seq)
-}
-
-object Test {
-  def main(args: Array[String]): Unit = {
-    val x = ImmutableMultiSet(1, 2, 2, 3, 5, 6, 7, 78)
-    println(x)
-    println(x.getClass)
-    x match {
-//      case Set(a, b, c, _, _, _, _) => println(a, b, c)
-      case _ => println("nope")
-    }
-  }
 }

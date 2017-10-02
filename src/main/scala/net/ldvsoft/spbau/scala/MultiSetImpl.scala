@@ -3,10 +3,6 @@ package net.ldvsoft.spbau.scala
 import scala.collection.mutable
 
 final class MultiSetImpl[T] private(val storage: mutable.Map[Any, Int] = mutable.Map.empty) extends MutableMultiSet[T] {
-  def MultiSetImpl(seq: Seq[T]): Unit = {
-    this(mutable.Map(seq.groupBy(identity).mapValues(it => it.length).toSeq:_*))
-  }
-
   override def seq: Seq[T] = storage.flatMap({
     case (e, x) => (1 to x) map (_ => e.asInstanceOf[T])
   }).toSeq
@@ -23,6 +19,8 @@ final class MultiSetImpl[T] private(val storage: mutable.Map[Any, Int] = mutable
 
   override def addAll(es: Seq[T]): Unit = es foreach add
 
+  override def removeAll(es: Seq[T]): Unit = es foreach remove
+
   override def removeAllCompletely(es: Seq[T]): Unit = es foreach removeCompletely
 
   override def clear(): Unit = storage.clear()
@@ -35,10 +33,22 @@ final class MultiSetImpl[T] private(val storage: mutable.Map[Any, Int] = mutable
 
   override def count(e: Any): Int = storage.getOrElse(e, 0)
 
-  override def containsAll(es: Seq[Any]): Unit = es forall apply
+  override def containsAll(es: Seq[Any]): Boolean = {
+    val against = MultiSetImpl(es)
+    against.storage map {
+      case (key, count) => storage.getOrElse(key, 0) >= count
+    } forall identity
+  }
 
   override def find(predicate: T => Boolean): Option[T] = storage
     .filter({ case (_, n) => n > 0 })
+    .keys
     .map(it => it.asInstanceOf[T])
     .find(predicate)
+}
+
+object MultiSetImpl {
+  def apply[T](seq: Seq[T]): MultiSetImpl[T] = {
+    new MultiSetImpl[T](mutable.Map(seq.groupBy(identity).mapValues(it => it.length).toSeq:_*))
+  }
 }
